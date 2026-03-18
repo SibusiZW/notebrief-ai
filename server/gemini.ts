@@ -1,20 +1,26 @@
 'use server';
+
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY!
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
 
-const ai = new GoogleGenAI({ apiKey: apiKey })
+const model = "gemini-3-flash-preview"
 
 export default async function generateSummary(text: string) {
-    if (text.trim() == "") return "Please enter text"
+    if (text.trim() === '') return "Please enter prompt"
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: `Hi, Summarize these notes for me:\n ${text} \n`,
-        config: {
-            systemInstruction: "You are a professional text summarizer and your task is to summarize the text given by the user to a shorter and more understandable format"
-        }
-    })
+    try {
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: `Please summarize these notes for me. Text: \n${text}\n`,
+            config: {
+                systemInstruction: 'You are a professional note summarizer and your job is to summarize the text given by the user'
+            }
+        })
 
-    return response.text
+        return response.text
+    } catch (error) {
+        console.error(error)
+        return "Error, check API Key"
+    }
 }
